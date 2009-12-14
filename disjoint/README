@@ -1,0 +1,5 @@
+Disjoint Sets
+
+Makeset(x);
+Find(x);
+Union(x1,x2);
