@@ -1,6 +1,7 @@
 package graph
 
 import "testing"
+import "disjoint"
 
 func TestGraphCreation(t *testing.T) {
     g := New();
@@ -158,4 +159,90 @@ func TestAddEdgeWeight(t *testing.T) {
     if edge.Weight != 3 {
         t.Errorf("Didn't correctly set edge weight");
     }
+}
+
+func TestDfsTraversal(t *testing.T) {
+    g := New();
+    
+    vertices := new([100]*Vertex);
+    
+    for i := 0 ; i < 100 ; i++ {
+        vertices[i] = g.AddVertex();
+    }
+    
+    for i := 0 ; i < 99 ; i++ {
+        v1 := vertices[i];
+        v2 := vertices[i + 1];
+        g.ConnectVertices(v1,v2);
+    }
+    
+    var i int32 = 0;
+    visiter := func(v *Vertex)() {
+        i++;
+    };
+    
+    g.Dfs(vertices[0],visiter);
+    
+    if i != 99 {
+        t.Errorf("Did not visit all vertices: %i",i);
+    }
+}
+
+func TestFindConnectedComponents(t *testing.T) {
+    g := New();
+    
+    vertices := new([100]*Vertex);
+    
+    for i := 0 ; i < 100 ; i++ {
+        vertices[i] = g.AddVertex();
+    }
+    
+    for i := 0 ; i < 99 ; i++ {
+        v1 := vertices[i];
+        v2 := vertices[i + 1];
+        g.ConnectVertices(v1,v2);
+    }
+    
+    result := g.FindConnectedComponents();
+    
+    for i := 0 ; i < 99 ; i++ {
+        v1 := vertices[i];
+        v2 := vertices[i + 1];
+        
+        if disjoint.Find(result[v1.Identifier()]) != disjoint.Find(result[v2.Identifier()]) {
+            t.Errorf("Two nodes were not in the same connected component despite being connected");
+        }
+    }
+}
+
+func TestFindConnectedComponentsDifferentComponents(t *testing.T) {
+    g := New();
+    
+    vertices := new([100]*Vertex);
+    
+    for i := 0 ; i < 100 ; i++ {
+        vertices[i] = g.AddVertex();
+    }
+    
+    for i := 0 ; i < 49 ; i++ {
+        v1 := vertices[i];
+        v2 := vertices[i + 1];
+        g.ConnectVertices(v1,v2);
+    }
+    
+    for i := 51 ; i < 99 ; i++ {
+        v1 := vertices[i];
+        v2 := vertices[i + 1];
+        g.ConnectVertices(v1,v2);
+    }
+    
+    result := g.FindConnectedComponents();
+    
+    v1 := vertices[49];
+    v2 := vertices[51];
+    
+    if disjoint.Find(result[v1.Identifier()]) == disjoint.Find(result[v2.Identifier()]) {
+        t.Errorf("Two vertices were unexpectedly in the same connected component");
+    }
+    
 }
